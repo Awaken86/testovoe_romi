@@ -1,12 +1,14 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import './App.css'
-import ruIcon from "./assets/icons/ru.png"
-import enIcon from "./assets/icons/en.png"
-import spIcon from "./assets/icons/sp.png"
-import geIcon from "./assets/icons/ge.png"
-import itIcon from "./assets/icons/it.png"
-import plIcon from "./assets/icons/pl.png"
-import searchIcon from "./assets/icons/search.png"
+import ruIcon from "/assets/icons/ru.svg"
+import enIcon from "/assets/icons/en.svg"
+import spIcon from "/assets/icons/sp.svg"
+import geIcon from "/assets/icons/ge.svg"
+import itIcon from "/assets/icons/it.svg"
+import plIcon from "/assets/icons/pl.svg"
+import NavBar from './components/Navbar'
+import Search from './components/Search'
+
 const languages = ([
     {
         id: 1,
@@ -55,65 +57,72 @@ const languages = ([
         status: "false"
     }
 ])
-function App() {
+export interface Language {
+    id: number;
+    name: string;
+    icon: string;
+    text: string;
+    status: string;
+}
+function App(props: { multiselect: boolean, icons: boolean }) {
+    const multiselect = props.multiselect;
     const [inputValue, setInputValue] = useState('');
-    const [currentLanguages, setCurrentLanguages] = useState(languages);
-    const [selectedLanguages, setSelectedLanguages] = useState([]);
-    const inputHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setInputValue(event.target.value);
-    }
-    const checkboxHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const languageName = event.target.name;
-        const language = currentLanguages.find((lang) => lang.name === languageName);
-        if (language) {
-            language.status = event.target.checked ? "true" : "false";
-            if (language.status === "true") {
-                setSelectedLanguages([...selectedLanguages, language]);
-            } else {
-                setSelectedLanguages(selectedLanguages.filter((lang) => lang !== language));
-            }
-            setCurrentLanguages([...currentLanguages]);
+    const [languagesList, setLanguagesList] = useState(languages);
+    const [dropDown, setDropDown] = useState(false);
+    const [selectedLanguages, setSelectedLanguages] = useState<Language[] | []>([]);
+    const checkboxHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
+        let List = languagesList;
+        if (!multiselect) {
+            List = languages
         }
-        console.log(selectedLanguages, currentLanguages);
+        const language = List.find((lang) => lang.name === e.target.name);
+        if (language) {
+            const updatedLanguage = {
+                ...language,
+                status: e.target.checked ? "true" : "false"
+            };
+            const updatedList = List.map((lang) =>
+                lang.name === e.target.name ? updatedLanguage : lang
+            );
+            if (updatedLanguage.status === "true") {
+                if (!multiselect) {
+                    setSelectedLanguages([updatedLanguage]);
+                } else {
+                    setSelectedLanguages([...selectedLanguages, updatedLanguage]);
+                }
+            } else {
+                setSelectedLanguages(
+                    selectedLanguages.filter((lang) => lang.name !== e.target.name)
+                );
+            }
+            setLanguagesList(updatedList);
+        }
     }
-    const handleDelete = (language) => {
+    const handleDelete = (language: Language) => {
         setSelectedLanguages(selectedLanguages.filter((lang) => lang !== language));
-        const updatedLanguages = currentLanguages.map((lang) => {
+        const updatedLanguages = languagesList.map((lang) => {
             if (lang === language) {
-                lang.status = false;
+                lang.status = "false";
             }
             return lang;
         });
-        setCurrentLanguages(updatedLanguages);
+        setLanguagesList(updatedLanguages);
     }
+    console.log('rerender')
     return (
         <>
-            <div className="navbar">
-                <p>Язык</p>
-                <div className='currentLanguagesContainer'>
-                    {selectedLanguages.map((language) => (
-                        <div className='languageBox'>
-                            <div>{language.text}</div>
-                            <button onClick={() => handleDelete(language)} className='clearButton'>x</button>
-                        </div>
-                    ))}
-                </div>
-            </div>
-            <div className="card">
-                <div className='searchContainer'>
-                    <img className='searchIcon' src={searchIcon}></img>
-                    <input className='search' type="text" id='search' onChange={inputHandler} value={inputValue} placeholder="Поиск"></input>
-                </div>
-                {currentLanguages.filter((language) => language.text.toLowerCase().includes(inputValue.toLowerCase())).map((language) => (
-                    <div className='languageContainer'>
-                        <p key={language.id}><img src={language.icon}></img>{language.text}</p>
-                        <input className='languageCheckbox' type="checkbox" id={language.name} name={language.name} onChange={checkboxHandler} value={language.text} checked={language.status === "true"}></input>
+            <NavBar dropDown={dropDown} setDropDown={setDropDown} selectedLanguages={selectedLanguages} handleDelete={handleDelete} />
+            {dropDown ? <div className="card">
+                <Search inputValue={inputValue} setInputValue={setInputValue} />
+                {languagesList.filter((language) => language.text.toLowerCase().includes(inputValue.toLowerCase())).map((language) => (
+                    <div key={language.id} className='languageContainer'>
+                        <p>{props.icons ? <img src={language.icon} alt="" /> : null} {language.text}</p>
+                        <input className='languageCheckbox' type="checkbox" id={language.name} name={language.name} onChange={(e) => checkboxHandler(e)}
+                            value={language.text} checked={language.status === "true"}></input>
                         <label htmlFor={language.name}></label>
                     </div>
                 ))}
-
-            </div>
-
+            </div> : null}
         </>
     )
 }
