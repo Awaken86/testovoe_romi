@@ -1,6 +1,12 @@
+
+import { memo } from 'react';
 import { Language } from '../App'
 import style from './Navbar.module.css'
-const NavBar = (props: { selectedLanguages: Language[]; handleDelete: (arg0: Language) => void; setDropDown: (arg0: boolean) => void; dropDown: boolean }) => {
+const NavBar = memo((props: {
+    selectedLanguages: Language[]; handleDelete: (arg0: Language) => void; setDropDown: (arg0: boolean) => void;
+    dropDown: boolean
+}) => {
+    console.log("NavBar")
     return (
         <div className={style.navbar}>
             <p>Язык</p>
@@ -17,5 +23,5 @@ const NavBar = (props: { selectedLanguages: Language[]; handleDelete: (arg0: Lan
             </div>
         </div>
     )
-}
+})
 export default NavBar

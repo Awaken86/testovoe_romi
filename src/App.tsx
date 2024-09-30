@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { memo, useState } from 'react'
 import './App.css'
 import ruIcon from "/assets/icons/ru.svg"
 import enIcon from "/assets/icons/en.svg"
@@ -6,8 +6,8 @@ import spIcon from "/assets/icons/sp.svg"
 import geIcon from "/assets/icons/ge.svg"
 import itIcon from "/assets/icons/it.svg"
 import plIcon from "/assets/icons/pl.svg"
-import NavBar from './components/Navbar'
 import Search from './components/Search'
+import NavBar from './components/Navbar'
 
 const languages = ([
     {
@@ -64,7 +64,7 @@ export interface Language {
     text: string;
     status: string;
 }
-function App(props: { multiselect: boolean, icons: boolean }) {
+const App = memo((props: { multiselect: boolean, icons: boolean }) => {
     const multiselect = props.multiselect;
     const [inputValue, setInputValue] = useState('');
     const [languagesList, setLanguagesList] = useState(languages);
@@ -98,7 +98,7 @@ function App(props: { multiselect: boolean, icons: boolean }) {
             setLanguagesList(updatedList);
         }
     }
-    const handleDelete = (language: Language) => {
+    const handleDelete = ((language: Language) => {
         setSelectedLanguages(selectedLanguages.filter((lang) => lang !== language));
         const updatedLanguages = languagesList.map((lang) => {
             if (lang === language) {
@@ -107,8 +107,8 @@ function App(props: { multiselect: boolean, icons: boolean }) {
             return lang;
         });
         setLanguagesList(updatedLanguages);
-    }
-    console.log('rerender')
+    })
+    console.log('App rerender')
     return (
         <>
             <NavBar dropDown={dropDown} setDropDown={setDropDown} selectedLanguages={selectedLanguages} handleDelete={handleDelete} />
@@ -125,6 +125,6 @@ function App(props: { multiselect: boolean, icons: boolean }) {
             </div> : null}
         </>
     )
-}
+})
 
 export default App
